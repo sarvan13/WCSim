@@ -41,7 +41,7 @@ inline int   atoi( const string& s ) {return std::atoi( s.c_str() );}
 
 WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
 					  WCSimDetectorConstruction* myDC)
-  :myDetector(myDC), vectorFileName(""), fuseCRY(true)
+  :myDetector(myDC), vectorFileName("")
 {
   //T. Akiri: Initialize GPS to allow for the laser use 
   MyGPS = new G4GeneralParticleSource();
@@ -100,6 +100,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   useLaserEvt  = false;
   useGPSEvt    = false;
   useRootrackerEvt = false;
+  useCRYEvt = false;
   
   fEvNum = 0;
   fInputRootrackerFile = NULL;
@@ -433,7 +434,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       SetBeamPDG(pdg);
     }
   //if using CRY
-  else  if(fuseCRY){
+  else  if(useCRYEvt){
     if (InputState != 0) {
       G4String* str = new G4String("CRY library was not successfully initialized");
       G4Exception("PrimaryGeneratorAction", "1",
@@ -571,10 +572,6 @@ vector<string> tokenize( string separators, string input )
     return tokens;
 }
 
-void WCSimPrimaryGeneratorAction::useCRY(G4bool usecry){
-  fuseCRY = usecry;
-}
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void WCSimPrimaryGeneratorAction::InputCRY()
@@ -599,6 +596,8 @@ void WCSimPrimaryGeneratorAction::UpdateCRY(std::string* MessInput)
 
 void WCSimPrimaryGeneratorAction::CRYFromFile(G4String newValue)
 {
+
+  OpenCRYFile(newValue);
   // Read the cry input file
   {
     std::string setupString("");

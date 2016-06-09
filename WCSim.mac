@@ -141,6 +141,22 @@
 ##### NEW
 /Tracking/fractionOpticalPhotonsToDraw 0.0
 
+
+# /mygen/generator CRY
+# /CRY/input returnNeutrons 0
+# /CRY/input returnProtons 0
+# /CRY/input returnGammas 0
+# /CRY/input returnElectrons 0
+# /CRY/input returnPions 0
+# /CRY/input returnMuons 1
+# /CRY/input date 5-1-2013
+# /CRY/input latitude 47.578
+# /CRY/input altitude 0
+# /CRY/input subboxLength 1
+# /CRY/input nParticlesMin 1
+# /CRY/input nParticlesMax 2
+# /CRY/update
+
 ## change the name of the output root file, default = wcsim.root
 /WCSimIO/RootFile wcsim_output.root
 

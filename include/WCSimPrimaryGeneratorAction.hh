@@ -85,7 +85,6 @@ class WCSimPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
         void InputCRY();
         void UpdateCRY(std::string* MessInput);
         void CRYFromFile(G4String newValue);
-        void useCRY(G4bool usecry);
 
 private:
         WCSimDetectorConstruction*      myDetector;
@@ -99,6 +98,7 @@ private:
         G4bool   useGunEvt;
         G4bool   useLaserEvt;  //T. Akiri: Laser flag
         G4bool   useGPSEvt;
+        G4bool   useCRYEvt;
         std::fstream inputFile;
         G4String vectorFileName;
         G4bool   GenerateVertexInRock;
@@ -124,13 +124,12 @@ private:
   G4int    _counterRock; 
   G4int    _counterCublic; 
 
-        std::vector<CRYParticle*> *vect; // vector of generated particles
-        CRYGenerator* gen;
-        G4bool fuseCRY;
-        G4int InputState;
-        G4String CRYFileName;
-        std::fstream CRYFile;
-        char* pPath;
+  std::vector<CRYParticle*> *vect; // vector of generated particles
+  CRYGenerator* gen;
+  G4int InputState;
+  G4String CRYFileName;
+  std::fstream CRYFile;
+  char* pPath;
   
         // Counters to read Rootracker event file
         int fEvNum;
@@ -165,6 +164,9 @@ private:
   
         inline void SetGPSEvtGenerator(G4bool choice) { useGPSEvt = choice; }
         inline G4bool IsUsingGPSEvtGenerator()  { return useGPSEvt; }
+    
+        inline void SetCRYEvtGenerator(G4bool choice) { useCRYEvt = choice; }
+        inline G4bool IsUsingCRYEvtGenerator()  { return useCRYEvt; }
 
         inline void OpenVectorFile(G4String fileName) 
         {
