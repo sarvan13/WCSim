@@ -15,6 +15,17 @@
 #include "TNRooTrackerVtx.hh"
 #include "TClonesArray.h"
 
+//from CRY
+#include "G4DataVector.hh"
+#include "Randomize.hh"
+#include "CRYSetup.h"
+#include "CRYGenerator.h"
+#include "CRYParticle.h"
+#include "CRYUtils.h"
+#include "vector"
+#include "RNGWrapper.hh"
+#include "G4ParticleTable.hh"
+
 class WCSimDetectorConstruction;
 class G4ParticleGun;
 class G4GeneralParticleSource;
@@ -67,8 +78,16 @@ class WCSimPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
         G4String GetGeneratorTypeString();
 
         void SaveOptionsToOutput(WCSimRootOptions * wcopt);
-    
-  private:
+
+        //from CRY
+        public:
+
+        void InputCRY();
+        void UpdateCRY(std::string* MessInput);
+        void CRYFromFile(G4String newValue);
+        void useCRY(G4bool usecry);
+
+private:
         WCSimDetectorConstruction*      myDetector;
         G4ParticleGun*                  particleGun;
         G4GeneralParticleSource*        MyGPS;  //T. Akiri: GPS to run Laser
@@ -102,9 +121,17 @@ class WCSimPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
         G4double xPos, yPos, zPos;
         G4double xDir, yDir, zDir;
 
-        G4int    _counterRock; 
-        G4int    _counterCublic;
+  G4int    _counterRock; 
+  G4int    _counterCublic; 
 
+        std::vector<CRYParticle*> *vect; // vector of generated particles
+        CRYGenerator* gen;
+        G4bool fuseCRY;
+        G4int InputState;
+        G4String CRYFileName;
+        std::fstream CRYFile;
+        char* pPath;
+  
         // Counters to read Rootracker event file
         int fEvNum;
         int fNEntries;
@@ -154,6 +181,20 @@ class WCSimPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
         }
         inline G4bool IsGeneratingVertexInRock() { return GenerateVertexInRock; }
         inline void SetGenerateVertexInRock(G4bool choice) { GenerateVertexInRock = choice; }
+
+        inline void OpenCRYFile(G4String fileName) 
+        {
+            if ( CRYFile.is_open() ) 
+                CRYFile.close();
+        
+            CRYFileName = fileName;
+            CRYFile.open(CRYFileName, std::fstream::in);
+        
+            if ( !CRYFile.is_open() ) {
+                G4cout << "CRY file " << CRYFileName << " not found" << G4endl;
+                exit(-1);
+            }
+        }
 
         inline void SetPoissonPMT(G4bool choice) { usePoissonPMT = choice; }
         inline G4bool IsUsingPoissonPMT(){ return usePoissonPMT; }
