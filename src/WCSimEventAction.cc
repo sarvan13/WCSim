@@ -5,6 +5,8 @@
 #include "WCSimWCHit.hh"
 #include "WCSimWCDigi.hh"
 #include "WCSimWCDigitizer.hh"
+#include "WCSimWCTrigger.hh"
+#include "WCSimWCAddDarkNoise.hh"
 #include "WCSimWCPMT.hh"
 #include "WCSimDetectorConstruction.hh"
 
@@ -35,24 +37,92 @@
 #include "WCSimRootEvent.hh"
 #include "TStopwatch.h"
 
+#ifndef _SAVE_RAW_HITS
 #define _SAVE_RAW_HITS
+#ifndef _SAVE_RAW_HITS_VERBOSE
+//#define _SAVE_RAW_HITS_VERBOSE
+#endif
+#endif
+#ifndef SAVE_DIGITS_VERBOSE
+//#define SAVE_DIGITS_VERBOSE
+#endif
+#ifndef TIME_DAQ_STEPS
+//#define TIME_DAQ_STEPS
+#endif
+
+#ifndef NPMTS_VERBOSE
+#define NPMTS_VERBOSE 10
+#endif
 
 WCSimEventAction::WCSimEventAction(WCSimRunAction* myRun, 
-				     WCSimDetectorConstruction* myDetector, 
-				     WCSimPrimaryGeneratorAction* myGenerator)
+				   WCSimDetectorConstruction* myDetector, 
+				   WCSimPrimaryGeneratorAction* myGenerator)
   :runAction(myRun), generatorAction(myGenerator), 
-   detectorConstructor(myDetector)
+   detectorConstructor(myDetector),
+   ConstructedDAQClasses(false)
 {
+  DAQMessenger = new WCSimWCDAQMessenger(this);
+
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
+
+  //create PMT response module
   WCSimWCPMT* WCDMPMT = new WCSimWCPMT( "WCReadoutPMT", myDetector);
-  WCSimWCDigitizer* WCDM = new WCSimWCDigitizer( "WCReadout", myDetector);
   DMman->AddNewModule(WCDMPMT);
-  DMman->AddNewModule(WCDM);
+
+  //create dark noise module
+  WCSimWCAddDarkNoise* WCDNM = new WCSimWCAddDarkNoise("WCDarkNoise", detectorConstructor);
+  DMman->AddNewModule(WCDNM);
 }
 
-WCSimEventAction::~WCSimEventAction(){}
+WCSimEventAction::~WCSimEventAction()
+{
+  delete DAQMessenger;
+}
 
-void WCSimEventAction::BeginOfEventAction(const G4Event*){}
+void WCSimEventAction::CreateDAQInstances()
+{
+  if(ConstructedDAQClasses) {
+    G4cerr << "WCSimEventAction::CreateDAQInstances() has already been called. Exiting..." << G4endl;
+    exit(-1);
+  }
+
+  G4cout << "Creating digitizer and trigger class instances in WCSimEventAction::CreateDAQInstances()" << G4endl;
+
+  G4DigiManager* DMman = G4DigiManager::GetDMpointer();
+
+  //create your choice of digitizer module
+  if(DigitizerChoice == "SKI") {
+    WCSimWCDigitizerSKI* WCDM = new WCSimWCDigitizerSKI("WCReadoutDigits", detectorConstructor, DAQMessenger);
+    DMman->AddNewModule(WCDM);
+  }
+  else {
+    G4cerr << "Unknown DigitizerChoice " << DigitizerChoice << G4endl;
+    exit(-1);
+  }
+
+  //create your choice of trigger module
+  if(TriggerChoice == "NDigits") {
+    WCSimWCTriggerNDigits* WCTM = new WCSimWCTriggerNDigits("WCReadout", detectorConstructor, DAQMessenger);
+    DMman->AddNewModule(WCTM);
+  }
+  else if(TriggerChoice == "NDigits2") {
+    WCSimWCTriggerNDigits2* WCTM = new WCSimWCTriggerNDigits2("WCReadout", detectorConstructor, DAQMessenger);
+    DMman->AddNewModule(WCTM);
+  }
+  else {
+    G4cerr << "Unknown TriggerChoice " << TriggerChoice << G4endl;
+    exit(-1);
+  }
+
+  ConstructedDAQClasses = true;
+}
+
+
+void WCSimEventAction::BeginOfEventAction(const G4Event*)
+{
+  if(!ConstructedDAQClasses)
+    CreateDAQInstances();
+}
 
 void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 {
@@ -91,10 +161,10 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   // Get Hit collection of this event
   G4HCofThisEvent* HCE         = evt->GetHCofThisEvent();
   WCSimWCHitsCollection* WCHC = 0;
-
+  G4String WCIDCollectionName = detectorConstructor->GetIDCollectionName();
   if (HCE)
   { 
-    G4String name =   "glassFaceWCPMT";
+    G4String name =   WCIDCollectionName;
     G4int collectionID = SDman->GetCollectionID(name);
     WCHC = (WCSimWCHitsCollection*)HCE->GetHC(collectionID);
   }
@@ -112,7 +182,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 
   // Get a pointer to the Digitizing Module Manager
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
-  
+
   // Get a pointer to the WC PMT module
   WCSimWCPMT* WCDMPMT =
     (WCSimWCPMT*)DMman->FindDigitizerModule("WCReadoutPMT");
@@ -123,32 +193,66 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   WCDMPMT->ReInitialize();
   
   
-  //  TStopwatch* ms = new TStopwatch();
-  // ms->Start();
-  
+#ifdef TIME_DAQ_STEPS
+  TStopwatch* ms = new TStopwatch();
+  ms->Start();
+#endif
+
   //Convert the hits to PMT pulse
   WCDMPMT->Digitize();
- 
-  //Get a pointer to the WC Digitizer Module
-  WCSimWCDigitizer* WCDM =
-    (WCSimWCDigitizer*)DMman->FindDigitizerModule("WCReadout");
+
+  //
+  // Do the Dark Noise, then Digitization, then Trigger
+  //
+
+  //
+  // First, add Dark noise hits before digitizing
+    
+  //Get a pointer to the WC Dark Noise Module
+  WCSimWCAddDarkNoise* WCDNM =
+    (WCSimWCAddDarkNoise*)DMman->FindDigitizerModule("WCDarkNoise");
   
-  //clear old info inside the digitizer
-   WCDM->ReInitialize();
-   
-   // Figure out what size PMTs we are using in the WC detector.
-   G4float PMTSize = detectorConstructor->GetPMTSize();
-   WCDM->SetPMTSize(PMTSize);
-   
-   WCDM->Digitize();
-   //ms->Stop();
-   //std::cout << " Digtization :  Real = " << ms->RealTime() 
-   //	    << " ; CPU = " << ms->CpuTime() << "\n";  
-   
+  //Add the dark noise
+  WCDNM->AddDarkNoise();
+
+  //
+  // Next, do the digitization
+  
+  //Get a pointer to the WC Digitizer Module
+  WCSimWCDigitizerBase* WCDM =
+    (WCSimWCDigitizerBase*)DMman->FindDigitizerModule("WCReadoutDigits");
+
+  //Digitize the hits
+  WCDM->Digitize();
+
+  //
+  // Finally, apply the trigger
+  
+  //Get a pointer to the WC Trigger Module
+  WCSimWCTriggerBase* WCTM =
+    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout");
+  
+  //tell it the dark noise rate (for calculating the average dark occupancy -> can adjust the NDigits threshold)
+  WCTM->SetDarkRate(WCDNM->GetDarkRate());
+  
+  //Apply the trigger
+  // This takes the digits, and places them into trigger gates
+  // Also throws away digits not contained in an trigger gate
+  WCTM->Digitize();
+
+#ifdef TIME_DAQ_STEPS
+  ms->Stop();
+  G4cout << " Digtization :  Real = " << ms->RealTime() 
+    	    << " ; CPU = " << ms->CpuTime() << "\n";  
+#endif
+
+   // Get the post-noise hit collection for the WC
+   G4int WCDChitsID = DMman->GetDigiCollectionID("WCRawPMTSignalCollection");
+   WCSimWCDigitsCollection * WCDC_hits = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDChitsID);
+  
    // Get the digitized collection for the WC
    G4int WCDCID = DMman->GetDigiCollectionID("WCDigitizedCollection");
-   WCSimWCDigitsCollection * WCDC = (WCSimWCDigitsCollection*) DMman->GetDigiCollection(WCDCID);
-
+   WCSimWCTriggeredDigitsCollection * WCDC = (WCSimWCTriggeredDigitsCollection*) DMman->GetDigiCollection(WCDCID);
    /*   
    // To use Do like This:
    // --------------------
@@ -286,7 +390,7 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
   FillRootEvent(event_id,
 		jhfNtuple,
 		trajectoryContainer,
-		WCHC,
+		WCDC_hits,
 		WCDC);
 
 }
@@ -388,10 +492,10 @@ G4int WCSimEventAction::WCSimEventFindStoppingVolume(G4String stopVolumeName)
 }
 
 void WCSimEventAction::FillRootEvent(G4int event_id, 
-				      const struct ntupleStruct& jhfNtuple,
-				      G4TrajectoryContainer* TC,
-				      WCSimWCHitsCollection* WCHC, 
-				      WCSimWCDigitsCollection* WCDC)
+				     const struct ntupleStruct& jhfNtuple,
+				     G4TrajectoryContainer* TC,
+				     WCSimWCDigitsCollection* WCDC_hits,
+				     WCSimWCTriggeredDigitsCollection* WCDC)
 {
   // Fill up a Root event with stuff from the ntuple
 
@@ -404,9 +508,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   WCSimRootTrigger* wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
   // get number of gates
   G4DigiManager* DMman = G4DigiManager::GetDMpointer();
-  WCSimWCDigitizer* WCDM =
-    (WCSimWCDigitizer*)DMman->FindDigitizerModule("WCReadout");
-  int ngates = WCDM->NumberOfGatesInThisEvent(); 
+  WCSimWCTriggerBase* WCTM =
+    (WCSimWCTriggerBase*)DMman->FindDigitizerModule("WCReadout");
+  int ngates = WCTM->NumberOfGatesInThisEvent(); 
   G4cout << "ngates =  " << ngates << "\n";
   for (int index = 0 ; index < ngates ; index++) 
     {
@@ -417,6 +521,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				   0,index+1); // date & # of subevent 
 	wcsimrootevent->SetMode(jhfNtuple.mode);
       }
+      wcsimrootevent->SetTriggerInfo(WCTM->GetTriggerType(index),
+				     WCTM->GetTriggerInfo(index));
     }
   
 
@@ -584,9 +690,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	if (ngates)
 	{
 
-	if ( ttime > WCDM->GetTriggerTime(0)+950. && WCDM->GetTriggerTime(1)+950. > ttime ) choose_event=1; 
-	if ( ttime > WCDM->GetTriggerTime(1)+950. && WCDM->GetTriggerTime(2)+950. > ttime ) choose_event=2; 
-	if (choose_event >= ngates) choose_event = ngates-1; // do not overflow the number of events
+	  if ( ttime > WCTM->GetTriggerTime(0)+950. && WCTM->GetTriggerTime(1)+950. > ttime ) choose_event=1; 
+	  if ( ttime > WCTM->GetTriggerTime(1)+950. && WCTM->GetTriggerTime(2)+950. > ttime ) choose_event=2; 
+	  if (choose_event >= ngates) choose_event = ngates-1; // do not overflow the number of events
 	
 	}
 
@@ -640,37 +746,66 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
 
   wcsimrootevent->SetNumTubesHit(jhfNtuple.numTubesHit);
+
 #ifdef _SAVE_RAW_HITS
-  if (WCHC) 
+
+  if (WCDC_hits) 
   {
+    //add the truth raw hits
+    // Both the pre- and post-PMT smearing hit times are accessible
+    // Choose to save just the pre-smeared times for now
+#ifdef _SAVE_RAW_HITS_VERBOSE
     G4cout<<"RAW HITS"<<G4endl;
-    wcsimrootevent->SetNumTubesHit(WCHC->entries());
-    for (k=0;k<WCHC->entries();k++){
-    
-      std::vector<float> truetime;
-      std::vector<int>   primaryParentID;
-
-      int tubeID  = (*WCHC)[k]->GetTubeID();
-      int totalpe = (*WCHC)[k]->GetTotalPe();
-
-      for (int l=0;l<totalpe;l++)
-      {
-	truetime.push_back((*WCHC)[k]->GetTime(l));
-	primaryParentID.push_back((*WCHC)[k]->GetParentID(l));
-      }
-
-      wcsimrootevent->AddCherenkovHit(tubeID,
-				      truetime,
-				      primaryParentID); 
-    } 
-  }
-
 #endif
+    wcsimrootevent->SetNumTubesHit(WCDC_hits->entries());
+    std::vector<float> truetime, smeartime;
+    std::vector<int>   primaryParentID;
+    double hit_time_smear, hit_time_true;
+    int hit_parentid;
+    //loop over the DigitsCollection
+    for(int idigi = 0; idigi < WCDC_hits->entries(); idigi++) {
+      int digi_tubeid = (*WCDC_hits)[idigi]->GetTubeID();
+      for(G4int id = 0; id < (*WCDC_hits)[idigi]->GetTotalPe(); id++){
+	hit_time_true  = (*WCDC_hits)[idigi]->GetPreSmearTime(id);
+	hit_parentid = (*WCDC_hits)[idigi]->GetParentID(id);
+	truetime.push_back(hit_time_true);
+	primaryParentID.push_back(hit_parentid);
+#ifdef _SAVE_RAW_HITS_VERBOSE
+	hit_time_smear = (*WCDC_hits)[idigi]->GetTime(id);
+	smeartime.push_back(hit_time_smear);
+#endif
+      }//id
+#ifdef _SAVE_RAW_HITS_VERBOSE
+      if(digi_tubeid < NPMTS_VERBOSE) {
+	G4cout << "Adding " << truetime.size()
+	       << " Cherenkov hits in tube " << digi_tubeid
+	       << " with truetime:smeartime:primaryparentID";
+	for(G4int id = 0; id < truetime.size(); id++) {
+	  G4cout << " " << truetime[id]
+		 << ":" << smeartime[id]
+		 << ":" << primaryParentID[id];
+	}//id
+	G4cout << G4endl;
+      }
+#endif
+      wcsimrootevent->AddCherenkovHit(digi_tubeid,
+				      truetime,
+				      primaryParentID);
+      smeartime.clear();
+      truetime.clear();
+      primaryParentID.clear();
+    }//idigi
+  }//if(WCDC_hits)
+#endif //_SAVE_RAW_HITS
 
   // Add the digitized hits
 
   if (WCDC) 
   {
+#ifdef SAVE_DIGITS_VERBOSE
+    G4cout << "DIGI HITS" << G4endl;
+#endif
+
     G4float sumq_tmp = 0.;
     
     for ( int index = 0 ; index < ngates ; index++)
@@ -682,32 +817,53 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 	for (k=0;k<WCDC->entries();k++)
 	  {
 	    if ( (*WCDC)[k]->HasHitsInGate(index)) {
-	      wcsimrootevent->AddCherenkovDigiHit((*WCDC)[k]->GetPe(index),
-						  (*WCDC)[k]->GetTime(index),
-						  (*WCDC)[k]->GetTubeID());  
-	      sumq_tmp = sumq_tmp + (*WCDC)[k]->GetPe(index);
-	      
-	      countdigihits++;
-	      wcsimrootevent->SetNumDigitizedTubes(countdigihits);
-	      wcsimrootevent->SetSumQ(sumq_tmp);
-	    }
-	  }
-	/*
-		G4cout << "checking digi hits ...\n";
-	  G4cout << "hits collection size =  " << 
+	      std::vector<float> vec_pe                  = (*WCDC)[k]->GetPe(index);
+	      std::vector<float> vec_time                = (*WCDC)[k]->GetTime(index);
+	      std::vector<std::vector<int> > vec_digicomp = (*WCDC)[k]->GetDigiCompositionInfo(index);
+	      const int tubeID                           = (*WCDC)[k]->GetTubeID();
+	      assert(vec_pe.size() == vec_time.size());
+	      assert(vec_pe.size() == vec_digicomp.size());
+	      for(unsigned int iv = 0; iv < vec_pe.size(); iv++) {
+#ifdef SAVE_DIGITS_VERBOSE
+		if(tubeID < NPMTS_VERBOSE) {
+		  G4cout << "Adding digit " << iv 
+			 << " for PMT " << tubeID
+			 << " pe "   << vec_pe[iv]
+			 << " time " << vec_time[iv]
+			 << " digicomp";
+		  for(unsigned int ivv = 0; ivv < vec_digicomp[iv].size(); ivv++)
+		    G4cout << " " << vec_digicomp[iv][ivv];
+		  G4cout << G4endl;
+		}
+#endif
+		assert(vec_digicomp[iv].size() > 0);
+		wcsimrootevent->AddCherenkovDigiHit(vec_pe[iv], vec_time[iv],
+						    tubeID, vec_digicomp[iv]);
+		sumq_tmp += vec_pe[iv];
+		countdigihits++;
+	      }//iv
+	    }//Digit exists in Gate
+	  }//k
+	wcsimrootevent->SetNumDigitizedTubes(countdigihits);
+	wcsimrootevent->SetSumQ(sumq_tmp);
+
+#ifdef SAVE_DIGITS_VERBOSE
+	G4cout << "checking digi hits ...\n";
+	G4cout << "hits collection size (number of PMTs hit) =  " << 
 	  wcsimrootevent->GetCherenkovHits()->GetEntries() << "\n";
-	  G4cout << "hits collection size =  " << 
+	G4cout << "hits collection size (number of true photon + dark noise hits) =  " << 
 	  wcsimrootevent->GetCherenkovHitTimes()->GetEntries() << "\n";
-	  G4cout << "digihits collection size =  " << 
+	G4cout << "digihits collection size =  " << 
 	  wcsimrootevent->GetCherenkovDigiHits()->GetEntries() << "\n";
-	  G4cout << "tracks collection size =  " << 
+	G4cout << "tracks collection size =  " << 
 	  wcsimrootevent->GetTracks()->GetEntries() 
-	  <<" get ntracks = " <<  wcsimrootevent->GetNtrack() << "\n";
-	*/
-	gatestart = WCDM->GetTriggerTime(index);
+	       <<" get ntracks = " <<  wcsimrootevent->GetNtrack() << "\n";
+#endif
+
+	gatestart = WCTM->GetTriggerTime(index);
 	WCSimRootEventHeader*HH = wcsimrootevent->GetHeader();
 	HH->SetDate(int(gatestart));
-      }
+      }//index (loop over ngates)
     
     // end of loop over WC trigger gates --> back to the main sub-event
     wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);

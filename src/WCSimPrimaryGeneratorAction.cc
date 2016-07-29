@@ -102,9 +102,17 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
       G4cout << "Set a vector file using the command /mygen/vecfile name"
 	     << G4endl;
-      return;
+      exit(-1);
     }
 
+    //
+    // Documentation describing the nuance text format can be found here: 
+    // http://neutrino.phy.duke.edu/nuance-format/
+    //
+    // The format must be strictly adhered to for it to be processed correctly.
+    // The lines and their meanings from begin through info are fixed, and then
+    // a variable number of tracks may follow.
+    //
     if (useNuanceTextFormat)
       {
 	const int lineSize=100;
@@ -259,7 +267,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 // Returns a vector with the tokens
 vector<string> tokenize( string separators, string input ) 
 {
-  unsigned int startToken = 0, endToken; // Pointers to the token pos
+  std::size_t startToken = 0, endToken; // Pointers to the token pos
   vector<string> tokens;  // Vector to keep the tokens
   
   if( separators.size() > 0 && input.size() > 0 ) 

@@ -11,11 +11,11 @@
 #include "TClonesArray.h"
 #include <string>
 #include <vector>
-#include <iostream>
 //#include <map>
 //#include "G4Transform3D.hh"
 
 // #include "WCSimDetectorConstruction.hh"
+#include "WCSimEnumerations.hh"
 
 class TDirectory;
 
@@ -69,7 +69,7 @@ public:
   Float_t   GetPdir(Int_t i=0) {return (i<3) ? fPdir[i] : 0;}
   Float_t   GetStop(Int_t i=0) {return (i<3) ? fStop[i] : 0;}
   Float_t   GetStart(Int_t i=0) {return (i<3) ? fStart[i] : 0;}
-  Int_t     GetParenttype(Int_t i=0) {return fParenttype;}
+  Int_t     GetParenttype(/*Int_t i=0*/) {return fParenttype;}
   Float_t   GetTime() { return fTime;}
   Int_t     GetId(){return fId;}
 
@@ -129,18 +129,20 @@ private:
   Float_t fQ;
   Float_t fT;
   Int_t fTubeId;
+  std::vector<int> fPhotonIds;
 
 public:
   WCSimRootCherenkovDigiHit() {}
-  WCSimRootCherenkovDigiHit(Float_t q, Float_t t, Int_t tubeid);
+  WCSimRootCherenkovDigiHit(Float_t q, Float_t t, Int_t tubeid, std::vector<int> photon_ids);
 
   virtual ~WCSimRootCherenkovDigiHit() { }
 
-  Float_t   GetQ() const { return fQ;}
-  Float_t   GetT() const { return fT;}
-  Int_t   GetTubeId() const { return fTubeId;}
+  Float_t     GetQ() const { return fQ;}
+  Float_t     GetT() const { return fT;}
+  Int_t       GetTubeId() const { return fTubeId;}
+  std::vector<int> GetPhotonIds() const { return fPhotonIds; }
 
-  ClassDef(WCSimRootCherenkovDigiHit,1)  
+  ClassDef(WCSimRootCherenkovDigiHit,2)  
 };
 
 
@@ -230,6 +232,9 @@ private:
   Float_t              fSumQ;
   TClonesArray         *fCherenkovDigiHits;  //-> Array of WCSimRootCherenkovDigiHit's
 
+  TriggerType_t        fTriggerType;         // Trigger algorithm that created this trigger
+  std::vector<Float_t> fTriggerInfo;         // Information about how it passed the trigger (e.g. how many hits in the NDigits window)
+
   bool IsZombie;
 
 public:
@@ -243,6 +248,7 @@ public:
   static void   Reset(Option_t *option ="");
 
   void          SetHeader(Int_t i, Int_t run, Int_t date,Int_t subevtn=1);
+  void          SetTriggerInfo(TriggerType_t trigger_type, std::vector<Float_t> trigger_info);
   bool          IsASubEvent() {  return (fEvtHdr.GetSubEvtNumber()>=1); }
   void          SetMode(Int_t i) {fMode = i;}
   void          SetVtxvol(Int_t i) {fVtxvol = i;}
@@ -261,34 +267,38 @@ public:
 
 
   WCSimRootEventHeader *GetHeader()               {return &fEvtHdr; }
-  WCSimRootPi0      *GetPi0Info()                 {return &fPi0; }
-  Int_t               GetMode()              const {return fMode;}
-  Int_t               GetVtxvol()            const {return fVtxvol;}
-  Float_t             GetVtx(Int_t i=0)            {return (i<3) ? fVtx[i]: 0;}
-  Int_t               GetVecRecNumber()      const {return fVecRecNumber;}
-  Int_t               GetJmu()               const {return fJmu;}
-  Int_t               GetJp()                const {return fJp;}
-  Int_t               GetNpar()              const {return fNpar;}
-  Int_t               GetNumTubesHit()       const {return fNumTubesHit;}
-  Int_t               GetNumDigiTubesHit()   const {return fNumDigitizedTubes;}
-  Int_t               GetNtrack()            const {return fNtrack; }
+  WCSimRootPi0       *GetPi0Info()                 {return &fPi0; }
+  Int_t               GetMode()               const {return fMode;}
+  Int_t               GetVtxvol()             const {return fVtxvol;}
+  Float_t             GetVtx(Int_t i=0)             {return (i<3) ? fVtx[i]: 0;}
+  Int_t               GetVecRecNumber()       const {return fVecRecNumber;}
+  Int_t               GetJmu()                const {return fJmu;}
+  Int_t               GetJp()                 const {return fJp;}
+  Int_t               GetNpar()               const {return fNpar;}
+  Int_t               GetNumTubesHit()        const {return fNumTubesHit;}
+  Int_t               GetNumDigiTubesHit()    const {return fNumDigitizedTubes;}
+  Int_t               GetNtrack()             const {return fNtrack; }
   Int_t               GetNcherenkovhits()     const {return fNcherenkovhits; }
+  Int_t               GetNcherenkovhittimes() const {return fNcherenkovhittimes;}
   Int_t               GetNcherenkovdigihits() const {return fNcherenkovdigihits;}
-  Float_t             GetSumQ()              const { return fSumQ;}
+  Float_t             GetSumQ()               const { return fSumQ;}
+  TriggerType_t       GetTriggerType()        const { return fTriggerType;}
+  std::vector<Float_t> GetTriggerInfo()        const { return fTriggerInfo;}
 
   WCSimRootTrack         *AddTrack(Int_t ipnu, 
-				    Int_t flag, 
-				    Float_t m, 
-				    Float_t p, 
-				    Float_t E, 
-				    Int_t startvol, 
-				    Int_t stopvol, 
-				    Float_t dir[3], 
-				    Float_t pdir[3], 
-				    Float_t stop[3],
-				    Float_t start[3],
-				    Int_t parenttype,
-				   Float_t time,Int_t id);
+				   Int_t flag, 
+				   Float_t m, 
+				   Float_t p, 
+				   Float_t E, 
+				   Int_t startvol, 
+				   Int_t stopvol, 
+				   Float_t dir[3], 
+				   Float_t pdir[3], 
+				   Float_t stop[3],
+				   Float_t start[3],
+				   Int_t parenttype,
+				   Float_t time,
+				   Int_t id);
 
   TClonesArray        *GetTracks() const {return fTracks;}
 
@@ -299,8 +309,9 @@ public:
   TClonesArray        *GetCherenkovHitTimes() const {return fCherenkovHitTimes;}
 
   WCSimRootCherenkovDigiHit   *AddCherenkovDigiHit(Float_t q, 
-						  Float_t t, 
-						  Int_t tubeid);
+						   Float_t t, 
+						   Int_t tubeid,
+						   std::vector<int> photon_ids);
 //  WCSimRootCherenkovDigiHit   *AddCherenkovDigiHit(Float_t q, 
 //						  Float_t t, 
 //						  Int_t tubeid,
@@ -308,7 +319,7 @@ public:
 
   TClonesArray            *GetCherenkovDigiHits() const {return fCherenkovDigiHits;}
 
-  ClassDef(WCSimRootTrigger,1) //WCSimRootEvent structure
+  ClassDef(WCSimRootTrigger,2) //WCSimRootEvent structure
 };
 
 
@@ -337,7 +348,7 @@ public:
     WCSimRootTrigger* tmp = dynamic_cast<WCSimRootTrigger*>( (*fEventList)[0] );
     int num = tmp->GetHeader()->GetEvtNum();
     ++Current; 
-    if ( Current > 9 ) fEventList->Expand(20);
+    if ( Current > 9 ) fEventList->Expand(150);
     fEventList->AddAt(new WCSimRootTrigger(num,Current),Current);
   }
   
@@ -349,11 +360,11 @@ public:
 
   void ReInitialize() { // need to remove all subevents at the end, or they just get added anyway...
     for ( int i = fEventList->GetLast() ; i>=1 ; i--) {
-      //      std::cout << "removing element # " << i << "...";
+      //      G4cout << "removing element # " << i << "...";
       WCSimRootTrigger* tmp = 
 	dynamic_cast<WCSimRootTrigger*>(fEventList->RemoveAt(i));
       delete tmp;
-      //std::cout <<"done !\n";
+      //G4cout <<"done !\n";
     }
     Current = 0;
     WCSimRootTrigger* tmp = dynamic_cast<WCSimRootTrigger*>( (*fEventList)[0]);
