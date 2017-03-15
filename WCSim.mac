@@ -143,16 +143,16 @@
 
 
 # /mygen/generator CRY
-# /CRY/input returnNeutrons 0
+# /CRY/input returnNeutrons 1
 # /CRY/input returnProtons 0
 # /CRY/input returnGammas 0
 # /CRY/input returnElectrons 0
 # /CRY/input returnPions 0
 # /CRY/input returnMuons 1
-# /CRY/input date 5-1-2013
-# /CRY/input latitude 47.578
+# /CRY/input date 1-1-2025
+# /CRY/input latitude 36.
 # /CRY/input altitude 0
-# /CRY/input subboxLength 1
+# /CRY/input subboxLength 50
 # /CRY/input nParticlesMin 1
 # /CRY/input nParticlesMax 2
 # /CRY/update

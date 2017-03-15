@@ -467,7 +467,8 @@ void WCSimEventAction::EndOfEventAction(const G4Event* evt)
 		   jhfNtuple,
 		   trajectoryContainer,
 		   WCDC_hits,
-		   WCDC);
+		   WCDC,
+                   !generatorAction->IsUsingCRYEvtGenerator()); // do not store "beam" and "target" in case of cosmic ray
    }
   
   
@@ -594,7 +595,8 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
 				     const struct ntupleStruct& jhfNtuple,
 				     G4TrajectoryContainer* TC,
 				     WCSimWCDigitsCollection* WCDC_hits,
-				     WCSimWCTriggeredDigitsCollection* WCDC)
+				     WCSimWCTriggeredDigitsCollection* WCDC,
+				     bool store_beam)
 {
   // Fill up a Root event with stuff from the ntuple
 
@@ -647,7 +649,7 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   // First two tracks come from jhfNtuple, as they are special
 
   int k;
-  for (k=0;k<2;k++) // should be just 2
+  if( store_beam ){for (k=0;k<2;k++) // should be just 2
   {
     float dir[3];
     float pdir[3];
@@ -659,8 +661,9 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
       pdir[l]=jhfNtuple.pdir[k][l];
       stop[l]=jhfNtuple.stop[k][l];
       start[l]=jhfNtuple.start[k][l];
-      //G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
-      //G4cout<< "stop[" << k << "][" << l <<"]: "<< jhfNtuple.stop[k][l] <<G4endl;
+	//G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
+    //G4cout<< "stop[" << k << "][" << l <<"]: "<< jhfNtuple.stop[k][l] <<G4endl;
+
     }
 
     // Add the track to the TClonesArray

@@ -42,7 +42,8 @@ public:
 		     const struct ntupleStruct&, 
 		     G4TrajectoryContainer*,
 		     WCSimWCDigitsCollection*,
-		     WCSimWCTriggeredDigitsCollection*);
+		     WCSimWCTriggeredDigitsCollection*,
+		     bool store_beam = true);
   WCSimRunAction* GetRunAction(){return runAction;}
   void SetDigitizerChoice(G4String digitizer) { DigitizerChoice = digitizer; }
   void SetTriggerChoice  (G4String trigger)   { TriggerChoice   = trigger;   }
