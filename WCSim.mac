@@ -56,6 +56,14 @@
 # command to choose save or not save the pi0 info 07/03/10 (XQ)
 /WCSim/SavePi0 false
 
+## select the input nuance-formatted vector file
+## you can of course use your own
+#/mygen/vecfile inputvectorfile
+#/mygen/vecfile h2o.2km.001-009x3_G4.kin
+#/mygen/vecfile mu+.out
+#/mygen/vecfile nuancewcsim_fix.dat
+#/mygen/vecfile melissa_cosmic_muons_test5.kin
+
 #choose the Trigger & Digitizer type (and options)
 /DAQ/Digitizer SKI
 /DAQ/Trigger NDigits

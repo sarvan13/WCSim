@@ -165,7 +165,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   G4ThreeVector center_of_barrel = G4ThreeVector(0.,0.,0.);
 
   if( use_CRY ){
-      center_of_barrel = G4ThreeVector(0.,0.,-extra_L/2.);
+      center_of_barrel = G4ThreeVector(0.,0.,-WCLength);
   }
 
     G4VPhysicalVolume* physiWCBarrel = 
