@@ -72,6 +72,7 @@ WCSimPrimaryGeneratorAction::WCSimPrimaryGeneratorAction(
   // Read the cry input file
   {
     pPath = getenv ("CRYDATAPATH");
+    pPath = (char *) "/data/prouse/hk/cry_v1.7/data";
 
     std::string setupString("");
     char buffer[1000];
