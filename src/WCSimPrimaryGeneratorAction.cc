@@ -443,7 +443,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4String particleName;
     vect->clear();
     gen->genEvent(vect);
-
+    G4cout << "Cosmic event time:" << gen->timeSimulated() << G4endl; 
     //....debug output
     /*
     G4cout << "\nEvent=" << anEvent->GetEventID() << " "
