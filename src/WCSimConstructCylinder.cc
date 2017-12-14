@@ -136,6 +136,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   G4LogicalVolume* logicWC = 
     new G4LogicalVolume(solidWC,
 			G4Material::GetMaterial("Air"),
+			//G4Material::GetMaterial("Sand"),
 			"WC",
 			0,0,0);
  

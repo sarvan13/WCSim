@@ -649,37 +649,38 @@ void WCSimEventAction::FillRootEvent(G4int event_id,
   // First two tracks come from jhfNtuple, as they are special
 
   int k;
-  if( store_beam ){for (k=0;k<2;k++) // should be just 2
-  {
-    float dir[3];
-    float pdir[3];
-    float stop[3];
-    float start[3];
-    for (int l=0;l<3;l++)
+  if( store_beam ) {
+    for (k = 0; k < 2; k++) // should be just 2
     {
-      dir[l]=jhfNtuple.dir[k][l];
-      pdir[l]=jhfNtuple.pdir[k][l];
-      stop[l]=jhfNtuple.stop[k][l];
-      start[l]=jhfNtuple.start[k][l];
-	//G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
-    //G4cout<< "stop[" << k << "][" << l <<"]: "<< jhfNtuple.stop[k][l] <<G4endl;
+      float dir[3];
+      float pdir[3];
+      float stop[3];
+      float start[3];
+      for (int l = 0; l < 3; l++) {
+        dir[l] = jhfNtuple.dir[k][l];
+        pdir[l] = jhfNtuple.pdir[k][l];
+        stop[l] = jhfNtuple.stop[k][l];
+        start[l] = jhfNtuple.start[k][l];
+        //G4cout<< "start[" << k << "][" << l <<"]: "<< jhfNtuple.start[k][l] <<G4endl;
+        //G4cout<< "stop[" << k << "][" << l <<"]: "<< jhfNtuple.stop[k][l] <<G4endl;
 
+      }
+
+      // Add the track to the TClonesArray
+      wcsimrootevent->AddTrack(jhfNtuple.ipnu[k],
+                               jhfNtuple.flag[k],
+                               jhfNtuple.m[k],
+                               jhfNtuple.p[k],
+                               jhfNtuple.E[k],
+                               jhfNtuple.startvol[k],
+                               jhfNtuple.stopvol[k],
+                               dir,
+                               pdir,
+                               stop,
+                               start,
+                               jhfNtuple.parent[k],
+                               jhfNtuple.time[k], 0);
     }
-
-    // Add the track to the TClonesArray
-    wcsimrootevent->AddTrack(jhfNtuple.ipnu[k], 
-			      jhfNtuple.flag[k], 
-			      jhfNtuple.m[k], 
-			      jhfNtuple.p[k], 
-			      jhfNtuple.E[k], 
-			      jhfNtuple.startvol[k], 
-			      jhfNtuple.stopvol[k], 
-			      dir, 
-			      pdir, 
-			      stop,
-			      start,
-			      jhfNtuple.parent[k],
-			     jhfNtuple.time[k],0); 
   }
 
   // the rest of the tracks come from WCSimTrajectory
