@@ -83,6 +83,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   // the radii are measured to the center of the surfaces
   // (tangent distance). Thus distances between the corner and the center are bigger.
   WCLength    = WCIDHeight + 2*2.3*m;	//jl145 - reflects top veto blueprint, cf. Farshid Feyzi
+  if(isNuPrism) WCLength = WCIDHeight + 2.*m;
   WCRadius    = (WCIDDiameter/2. + WCBlackSheetThickness + 1.5*m)/cos(dPhi/2.) ; // ToDo: OD 
  
   // now we know the extend of the detector and are able to tune the tolerance
@@ -138,7 +139,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   }
 
   if( use_CRY ){
-	extra_R = 50.*m;
+	extra_R = 100.*m;
     extra_L = 50.*m;
 
 	overburden_on_top = 0.*m; // qqq set to overburden value for CRY simulation
@@ -172,8 +173,8 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
    logicWC->SetVisAttributes(G4VisAttributes::Invisible); //amb79
 
    if( use_CRY ){
-	 double sand_inner_radius = WCRadius + 2.*m;
-	 double sand_outer_radius = WCRadius+extra_R - 2.*m;
+	 double sand_inner_radius = WCRadius + 1.*m;
+	 double sand_outer_radius = WCRadius+extra_R - 1.*m;
 	 double sand_half_height = 0.5*(WCIDHeight + overburden_on_top);
 	 double sand_start_angle = 0.*deg;
 	 double sand_end_angle = 360.*deg;
@@ -215,7 +216,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 			G4Material::GetMaterial(water),
 			"WCBarrel",
 			0,0,0);
-
+  if(isNuPrism) center_of_barrel_z -= WCIDVerticalPosition;
   G4ThreeVector center_of_barrel = G4ThreeVector(0.,0.,center_of_barrel_z);
 
   G4VPhysicalVolume* physiWCBarrel = 
@@ -227,6 +228,52 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 		    false,
 		    0,
 		    checkOverlaps); 
+	
+  // For NuPRISM, add up to 6m of pure water above detector, and air above that
+  if(isNuPrism && WCIDVerticalPosition>0){
+    G4double waterTubeHalfHeight = 0.5*std::min(WCIDVerticalPosition, 6.*m);
+    G4Tubs* solidWaterTube = new G4Tubs("WaterTube",
+					0.0*m,
+					WCRadius+1.*m,
+					waterTubeHalfHeight,
+					0.*deg,
+					360.*deg);
+    G4LogicalVolume* logicWaterTube = new G4LogicalVolume(solidWaterTube,
+							  G4Material::GetMaterial("Water"),
+							  "WaterTube",
+							  0,0,0);
+    G4ThreeVector center_of_watertube = G4ThreeVector(0.,0.,center_of_barrel_z+0.5*WCLength+waterTubeHalfHeight);
+    G4VPhysicalVolume* physiWaterTube = new G4PVPlacement(0,
+							  center_of_watertube,
+							  logicWaterTube,
+							  "WaterTube",
+							  logicWC,
+							  false,
+							  0,
+							  checkOverlaps);
+    if(WCIDVerticalPosition>6.*m){
+      G4double airTubeHalfHeight = 0.5*(WCIDVerticalPosition-6.*m);
+      G4Tubs* solidAirTube = new G4Tubs("AirTube",
+					0.0*m,
+					WCRadius+1.*m,
+					airTubeHalfHeight,
+					0.*deg,
+					360.*deg);
+      G4LogicalVolume* logicAirTube = new G4LogicalVolume(solidAirTube,
+							  G4Material::GetMaterial("Air"),
+							  "AirTube",
+							  0,0,0);
+      G4ThreeVector center_of_airtube = G4ThreeVector(0.,0.,center_of_barrel_z+0.5*WCLength+6.*m+airTubeHalfHeight);
+      G4VPhysicalVolume* physiAirTube = new G4PVPlacement(0,
+							  center_of_airtube,
+							  logicAirTube,
+							  "AirTube",
+							  logicWC,
+							  false,
+							  0,
+							  checkOverlaps);
+    }
+  }
 
 // This volume needs to made invisible to view the blacksheet and PMTs with RayTracer
   if (Vis_Choice == "RayTracer")
@@ -269,7 +316,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 		      logicWCBarrel,
 		      false,
 		      0,
-			  checkOverlaps);
+		      checkOverlaps);
 if(!debugMode)
    logicWCBarrelAnnulus->SetVisAttributes(G4VisAttributes::Invisible); //amb79
 

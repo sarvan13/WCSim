@@ -234,7 +234,7 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   G4double expHallLength = 3.*WCLength; //jl145 - extra space to simulate cosmic muons more easily
 
   G4cout << " expHallLength = " << expHallLength / m << G4endl;
-  G4double expHallHalfLength = 0.5*expHallLength;
+  G4double expHallHalfLength = 0.5*expHallLength+100.*m;
 
   G4Box* solidExpHall = new G4Box("expHall",
 				  expHallHalfLength + fabs(position.x()),
