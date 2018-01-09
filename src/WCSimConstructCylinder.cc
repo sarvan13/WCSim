@@ -117,96 +117,61 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   // Volumes
   //-----------------------------------------------------
   // The water barrel is placed in an tubs of air
-  double extra_R = 2.*m;
-  double extra_L = 4.2*m;
-
-
-  bool use_CRY = true; // qqq set to true for CRY simulation
-  bool use_Melissa = false; // set to true for running over Melissa input
-  double center_of_barrel_z = 0.;
-  double overburden_on_top = 0.;
-  double center_of_overburden_z = 0.;
-
-  if( use_Melissa && use_CRY ){
-	G4cout << " problem! use_Melissa " << use_Melissa << " use_CRY " << use_CRY << " only one should be enabled! switching to CRY " << G4endl;
-	use_Melissa = false;
-  }
-
-  if( use_Melissa ){
-	extra_R = 50.*m;
-    extra_L = 50.*m;
-	center_of_barrel_z = 0.*m;
-  }
-
-  if( use_CRY ){
-	extra_R = 100.*m;
-    extra_L = 50.*m;
-
-	overburden_on_top = 0.*m; // qqq set to overburden value for CRY simulation
-	// positive value to add sand on top of the detector
-	// negative value to have the detector stick out of sand
-	// o = 0 --> pmts from z = -6m to z = 0
-	// o = 4 --> pmts from z = -10m to z = -4
-	// o = -2 --> pmts from z = -6m to z = 0
-
-	center_of_barrel_z = std::min(-0.5*WCIDHeight, -0.5*WCIDHeight - overburden_on_top);
-	center_of_overburden_z = -0.5*(WCIDHeight + fabs(overburden_on_top));
-
-  }
-
+  double extra_R = 100.*m;
+	
+  G4double airAbove = 50.*m;
+  G4double sandBelow = 50.*m;
+  G4double pitHeight = WCLength;
+  if(isNuPrism) pitHeight = 54.*m;
+	
+  G4double totalHeight = airAbove + sandBelow + pitHeight;
   G4Tubs* solidWC = new G4Tubs("WC",
 			       0.0*m,
-			       WCRadius+extra_R, 
-			       .5*WCLength+extra_L,	//jl145 - per blueprint
+			       WCRadius+extra_R,
+			       totalHeight,	//jl145 - per blueprint
 			       0.*deg,
 			       360.*deg);
 
-  G4LogicalVolume* logicWC = 
-    new G4LogicalVolume(solidWC,
-						G4Material::GetMaterial("Air"),
-						"WC",
-						0,0,0);
+  G4LogicalVolume* logicWC = new G4LogicalVolume(solidWC, 
+                                                 G4Material::GetMaterial("Air"), 
+                                                 "WC", 
+                                                 0,0,0);
  
-   G4VisAttributes* showColor = new G4VisAttributes(G4Colour(0.0,1.0,0.0));
-   logicWC->SetVisAttributes(showColor);
+  G4VisAttributes* showColor = new G4VisAttributes(G4Colour(0.0,1.0,0.0));
+  logicWC->SetVisAttributes(showColor);
 
-   logicWC->SetVisAttributes(G4VisAttributes::Invisible); //amb79
+  logicWC->SetVisAttributes(G4VisAttributes::Invisible); //amb79
 
-   if( use_CRY ){
-	 double sand_inner_radius = WCRadius + 1.*m;
-	 double sand_outer_radius = WCRadius+extra_R - 1.*m;
-	 double sand_half_height = 0.5*(WCIDHeight + overburden_on_top);
-	 double sand_start_angle = 0.*deg;
-	 double sand_end_angle = 360.*deg;
-	 G4Tubs* sand_tube
-	   = new G4Tubs("sand",
-	 				sand_inner_radius,
-	 				sand_outer_radius,
-	 				sand_half_height,
-	 				sand_start_angle, 
-	 				sand_end_angle);
-	 
-	 G4ThreeVector center_of_overburden = G4ThreeVector(0.,0.,center_of_overburden_z);
-	 G4LogicalVolume* logic_sand =
-	   new G4LogicalVolume(sand_tube,
-	 					   G4Material::GetMaterial("Sand"),
-	 					   "sand",
-	 					  0,0,0);
-	 G4VPhysicalVolume* physic_sand =
-	   new G4PVPlacement(0,
-	 					 center_of_overburden,
-	 					 logic_sand,
-	 					 "sand",
-	 					 logicWC,
-	 					 false, 0);
-   }
+  double sand_inner_radius = WCRadius + 1.1*m;
+  double sand_outer_radius = WCRadius+extra_R - 0.1*m;
+  double sand_half_height = 0.5*(pitHeight + sandBelow);
+  double sand_start_angle = 0.*deg;
+  double sand_end_angle = 360.*deg;
+  double sand_centre = -0.5*airAbove;
+  G4Tubs* sand_tube = new G4Tubs("sand",
+                                 sand_inner_radius,
+                                 sand_outer_radius,
+                                 sand_half_height,
+                                 sand_start_angle, 
+                                 sand_end_angle);
+  G4ThreeVector center_of_sand = G4ThreeVector(0.,0.,sand_centre);
+  G4LogicalVolume* logic_sand = new G4LogicalVolume(sand_tube, 
+                                                    G4Material::GetMaterial("Sand"), 
+                                                    "sand", 
+                                                    0,0,0);
+  G4VPhysicalVolume* physic_sand = new G4PVPlacement(0,
+                                                     center_of_sand,
+                                                     logic_sand,
+                                                     "sand",
+                                                     logicWC,
+                                                     false, 0);
   
   //-----------------------------------------------------
   // everything else is contained in this water tubs
   //-----------------------------------------------------
   G4Tubs* solidWCBarrel = new G4Tubs("WCBarrel",
 				     0.0*m,
-				     WCRadius+1.*m, // add a bit of extra space
+				     WCRadius+1.*m, // add OD water
 				     .5*WCLength,  //jl145 - per blueprint
 				     0.*deg,
 				     360.*deg);
@@ -216,12 +181,14 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 			G4Material::GetMaterial(water),
 			"WCBarrel",
 			0,0,0);
-  if(isNuPrism) center_of_barrel_z -= WCIDVerticalPosition;
-  G4ThreeVector center_of_barrel = G4ThreeVector(0.,0.,center_of_barrel_z);
+  double centre_of_barrel_z = 0.5*(sandBelow+pitHeight-WCLength-airAbove);
+	
+  if(isNuPrism) centre_of_barrel_z -= WCIDVerticalPosition;
+  G4ThreeVector centre_of_barrel = G4ThreeVector(0.,0.,centre_of_barrel_z);
 
   G4VPhysicalVolume* physiWCBarrel = 
   new G4PVPlacement(0,
-                    center_of_barrel,
+                    centre_of_barrel,
 		    logicWCBarrel,
 		    "WCBarrel",
 		    logicWC,
@@ -229,24 +196,46 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 		    0,
 		    checkOverlaps); 
 	
-  // For NuPRISM, add up to 6m of pure water above detector, and air above that
+  // For NuPRISM, add pure water below detector to bottom of pit, up to 6m of pure water above detector, and air above that
+  if(isNuPrism && (WCIDVerticalPosition+WCLength<pitHeight)){
+	  G4double waterBelowHalfHeight = 0.5*(pitHeight-WCIDVerticalPosition-WCLength);
+	  G4Tubs* solidWaterBelow = new G4Tubs("WaterBelow",
+					       0.0*m,
+					       WCRadius+1.*m,
+					       waterBelowHalfHeight,
+					       0.*deg,
+					       360.*deg);
+	  G4LogicalVolume* logicWaterBelow = new G4LogicalVolume(solidWaterBelow,
+								 G4Material::GetMaterial("Water"),
+								 "WaterBelow",
+								 0,0,0);
+	  G4ThreeVector centre_of_water_below = G4ThreeVector(0.,0.,centre_of_barrel_z-0.5*WCLength-waterBelowHalfHeight);
+	  G4VPhysicalVolume* physiWaterTube = new G4PVPlacement(0,
+								centre_of_water_below,
+								logicWaterBelow,
+								"WaterBelow",
+								logicWC,
+								false,
+								0,
+								checkOverlaps);
+  }
   if(isNuPrism && WCIDVerticalPosition>0){
-    G4double waterTubeHalfHeight = 0.5*std::min(WCIDVerticalPosition, 6.*m);
-    G4Tubs* solidWaterTube = new G4Tubs("WaterTube",
+    G4double waterAboveHalfHeight = 0.5*std::min(WCIDVerticalPosition, 6.*m);
+    G4Tubs* solidWaterAbove = new G4Tubs("WaterAbove",
 					0.0*m,
 					WCRadius+1.*m,
-					waterTubeHalfHeight,
+					waterAboveHalfHeight,
 					0.*deg,
 					360.*deg);
-    G4LogicalVolume* logicWaterTube = new G4LogicalVolume(solidWaterTube,
+    G4LogicalVolume* logicWaterAbove = new G4LogicalVolume(solidWaterAbove,
 							  G4Material::GetMaterial("Water"),
-							  "WaterTube",
+							  "WaterAbove",
 							  0,0,0);
-    G4ThreeVector center_of_watertube = G4ThreeVector(0.,0.,center_of_barrel_z+0.5*WCLength+waterTubeHalfHeight);
-    G4VPhysicalVolume* physiWaterTube = new G4PVPlacement(0,
-							  center_of_watertube,
-							  logicWaterTube,
-							  "WaterTube",
+    G4ThreeVector centre_of_water_above = G4ThreeVector(0.,0.,centre_of_barrel_z+0.5*WCLength+waterAboveHalfHeight);
+    G4VPhysicalVolume* physiWaterAbove = new G4PVPlacement(0,
+							  centre_of_water_above,
+							  logicWaterAbove,
+							  "WaterAbove",
 							  logicWC,
 							  false,
 							  0,
@@ -263,7 +252,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
 							  G4Material::GetMaterial("Air"),
 							  "AirTube",
 							  0,0,0);
-      G4ThreeVector center_of_airtube = G4ThreeVector(0.,0.,center_of_barrel_z+0.5*WCLength+6.*m+airTubeHalfHeight);
+      G4ThreeVector center_of_airtube = G4ThreeVector(0.,0.,centre_of_barrel_z+0.5*WCLength+6.*m+airTubeHalfHeight);
       G4VPhysicalVolume* physiAirTube = new G4PVPlacement(0,
 							  center_of_airtube,
 							  logicAirTube,
