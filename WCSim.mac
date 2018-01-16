@@ -27,9 +27,10 @@
 #Use mPMTs settings (uncomment/delete the above)
 #/WCSim/WCgeom nuPRISM_mPMT
 /WCSim/WCgeom nuPRISMShort_mPMT
+/WCSim/nuPRISM/SetDetectorVerticalPosition 20 m
 # Set Gadolinium doping (concentration is in percent)
-#/WCSim/DopingConcentration 0.1
-#/WCSim/DopedWater false
+/WCSim/DopingConcentration 0.1
+/WCSim/DopedWater true
 /WCSim/Construct
 ## OR for single mPMT mode or updating mPMT parameters:
 #/control/execute macros/mPMT_nuPrism1.mac         ## mPMT options: mPMT_nuPrism1.mac and 2.mac
@@ -172,5 +173,5 @@
 ## a NEUT vector file as input
 /WCSimIO/SaveRooTracker 0
 
-/run/beamOn 10
+/run/beamOn 1
 #exit

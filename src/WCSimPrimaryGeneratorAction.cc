@@ -487,7 +487,7 @@ void WCSimPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
       particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
       particleGun->SetParticleEnergy((*vect)[j]->ke()*MeV);
-      particleGun->SetParticlePosition(G4ThreeVector((*vect)[j]->x()*m, (*vect)[j]->z()*m+myDetector->GetWCIDVerticalPosition(), (*vect)[j]->y()*m));
+      particleGun->SetParticlePosition(G4ThreeVector((*vect)[j]->x()*m, (*vect)[j]->z()*m+myDetector->GetWCIDVerticalPosition()+0.5*myDetector->GetWCIDHeight()+1.*m, (*vect)[j]->y()*m));
       particleGun->SetParticleMomentumDirection(G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), (*vect)[j]->w()));
       particleGun->SetParticleTime((*vect)[j]->t());
       particleGun->GeneratePrimaryVertex(anEvent);

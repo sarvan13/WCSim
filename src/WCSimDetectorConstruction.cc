@@ -226,7 +226,7 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 
   G4ThreeVector position(0,0,0);// = GetTranslationFromSettings();
 
-  if(isNuPrism) position.setY(WCIDVerticalPosition);
+  if(isNuPrism) position.setY(WCIDVerticalPosition/2.);
 
   std::cout << "position Y = " << position.y() << std::endl;
 
@@ -238,9 +238,9 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
   G4double expHallHalfLength = 0.5*expHallLength+100.*m;
 
   G4Box* solidExpHall = new G4Box("expHall",
-				  expHallHalfLength + fabs(position.x()),
-				  expHallHalfLength + fabs(position.y()),
-				  expHallHalfLength + fabs(position.z()));
+				  expHallHalfLength,
+				  expHallHalfLength,
+				  expHallHalfLength);
   
   G4LogicalVolume* logicExpHall = 
     new G4LogicalVolume(solidExpHall,
