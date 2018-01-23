@@ -122,7 +122,7 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructCylinder()
   G4double airAbove = 50.*m;
   G4double sandBelow = 50.*m;
   G4double pitHeight = WCLength;
-  if(isNuPrism) pitHeight = 54.*m;
+  if(isNuPrism) pitHeight = 51.07*m;
   G4double totalHeight = airAbove + sandBelow + pitHeight;
   G4double halfAirAbove = 0.5*airAbove;
   G4double halfSandBelow = 0.5*sandBelow;
