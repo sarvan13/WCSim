@@ -226,7 +226,7 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 
   G4ThreeVector position(0,0,0);// = GetTranslationFromSettings();
 
-  if(isNuPrism) position.setY(WCIDVerticalPosition/2.);
+  if(isNuPrism) position.setY(WCIDVerticalPosition-(51.07*m-WCLength)/2.);
 
   std::cout << "position Y = " << position.y() << std::endl;
 
