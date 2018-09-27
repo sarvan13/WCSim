@@ -30,5 +30,5 @@
 # automatically adjust the NDigits threshold depending on the average noise occupancy during the trigger window
 /DAQ/TriggerNDigits/AdjustForNoise true
 # the digits in which range around the trigger time (ns) should be saved with the event
-/DAQ/TriggerNDigits/PreTriggerWindow  -100
+/DAQ/TriggerNDigits/PreTriggerWindow  100
 /DAQ/TriggerNDigits/PostTriggerWindow +150
