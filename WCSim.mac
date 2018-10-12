@@ -43,9 +43,10 @@
 # the total number of photons
 # On the detector side, the rest of QE are applied according to QE/QE_max
 # distribution. This option is in particular important for the WLS
-# 3. The last option means all the QE are applied at the detector
+# 3. The third option means all the QE are applied at the detector
 # Good for the low energy running.
 # 4. Switch off the QE, ie. set it at 100%
+
 /WCSim/PMTQEMethod     Stacking_Only
 #/WCSim/PMTQEMethod     Stacking_And_SensitiveDetector
 #/WCSim/PMTQEMethod     SensitiveDetector_Only
@@ -56,14 +57,6 @@
 
 # command to choose save or not save the pi0 info 07/03/10 (XQ)
 /WCSim/SavePi0 false
-
-## select the input nuance-formatted vector file
-## you can of course use your own
-#/mygen/vecfile inputvectorfile
-#/mygen/vecfile h2o.2km.001-009x3_G4.kin
-#/mygen/vecfile mu+.out
-#/mygen/vecfile nuancewcsim_fix.dat
-#/mygen/vecfile melissa_cosmic_muons_test5.kin
 
 #choose the Trigger & Digitizer type (and options)
 /DAQ/Digitizer SKI
@@ -113,12 +106,12 @@
 # Or you can use the G4 Particle Gun
 # for a full list of /gun/ commands see:
 # http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_gun_.html
-/mygen/generator gun
-/gun/particle e-
+#/mygen/generator gun
+#/gun/particle e-
 #/gun/particle pi0
-/gun/energy 500 MeV
-/gun/direction 1 0 0
-/gun/position 0 0 0  
+#/gun/energy 500 MeV
+#/gun/direction 1 0 0
+#/gun/position 0 0 0  
 
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun
@@ -151,20 +144,20 @@
 /Tracking/fractionOpticalPhotonsToDraw 0.0
 
 
-# /mygen/generator CRY
-# /CRY/input returnNeutrons 1
-# /CRY/input returnProtons 0
-# /CRY/input returnGammas 0
-# /CRY/input returnElectrons 0
-# /CRY/input returnPions 0
-# /CRY/input returnMuons 1
-# /CRY/input date 1-1-2025
-# /CRY/input latitude 36.
-# /CRY/input altitude 0
-# /CRY/input subboxLength 50
-# /CRY/input nParticlesMin 1
-# /CRY/input nParticlesMax 2
-# /CRY/update
+/mygen/generator CRY
+/CRY/input returnNeutrons 1
+/CRY/input returnProtons 0
+/CRY/input returnGammas 0
+/CRY/input returnElectrons 0
+/CRY/input returnPions 0
+/CRY/input returnMuons 1
+/CRY/input date 1-1-2025
+/CRY/input latitude 36.
+/CRY/input altitude 0
+/CRY/input subboxLength 50
+/CRY/input nParticlesMin 1
+/CRY/input nParticlesMax 2
+/CRY/update
 
 ## change the name of the output root file, default = wcsim.root
 /WCSimIO/RootFile wcsim_output.root
@@ -173,5 +166,8 @@
 ## a NEUT vector file as input
 /WCSimIO/SaveRooTracker 0
 
-/run/beamOn 1
+## set a timer running on WCSimRunAction
+#/WCSimIO/Timer false
+
+/run/beamOn 10
 #exit
