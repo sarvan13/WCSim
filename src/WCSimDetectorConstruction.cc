@@ -226,20 +226,21 @@ G4VPhysicalVolume* WCSimDetectorConstruction::Construct()
 
   G4ThreeVector position(0,0,0);// = GetTranslationFromSettings();
 
-  if(isNuPrism) position.setY(WCIDVerticalPosition);
+  if(isNuPrism) position.setY(WCIDVerticalPosition-(51.07*m-WCLength)/2.);
 
   std::cout << "position Y = " << position.y() << std::endl;
 
 
   G4double expHallLength = 3.*WCLength; //jl145 - extra space to simulate cosmic muons more easily
+  if(isNuPrism) expHallLength = 200.*m;
 
   G4cout << " expHallLength = " << expHallLength / m << G4endl;
-  G4double expHallHalfLength = 0.5*expHallLength;
+  G4double expHallHalfLength = 0.5*expHallLength+100.*m;
 
   G4Box* solidExpHall = new G4Box("expHall",
-				  expHallHalfLength + fabs(position.x()),
-				  expHallHalfLength + fabs(position.y()),
-				  expHallHalfLength + fabs(position.z()));
+				  expHallHalfLength,
+				  expHallHalfLength,
+				  expHallHalfLength);
   
   G4LogicalVolume* logicExpHall = 
     new G4LogicalVolume(solidExpHall,

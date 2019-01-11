@@ -27,9 +27,10 @@
 #Use mPMTs settings (uncomment/delete the above)
 #/WCSim/WCgeom nuPRISM_mPMT
 /WCSim/WCgeom nuPRISMShort_mPMT
+/WCSim/nuPRISM/SetDetectorVerticalPosition 20 m
 # Set Gadolinium doping (concentration is in percent)
-#/WCSim/DopingConcentration 0.1
-#/WCSim/DopedWater false
+/WCSim/DopingConcentration 0.1
+/WCSim/DopedWater true
 /WCSim/Construct
 ## OR for single mPMT mode or updating mPMT parameters:
 #/control/execute macros/mPMT_nuPrism1.mac         ## mPMT options: mPMT_nuPrism1.mac and 2.mac
@@ -105,12 +106,12 @@
 # Or you can use the G4 Particle Gun
 # for a full list of /gun/ commands see:
 # http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_gun_.html
-/mygen/generator gun
-/gun/particle e-
+#/mygen/generator gun
+#/gun/particle e-
 #/gun/particle pi0
-/gun/energy 500 MeV
-/gun/direction 1 0 0
-/gun/position 0 0 0  
+#/gun/energy 500 MeV
+#/gun/direction 1 0 0
+#/gun/position 0 0 0  
 
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun
@@ -141,6 +142,22 @@
 
 ##### NEW
 /Tracking/fractionOpticalPhotonsToDraw 0.0
+
+
+/mygen/generator CRY
+/CRY/input returnNeutrons 1
+/CRY/input returnProtons 0
+/CRY/input returnGammas 0
+/CRY/input returnElectrons 0
+/CRY/input returnPions 0
+/CRY/input returnMuons 1
+/CRY/input date 1-1-2025
+/CRY/input latitude 36.
+/CRY/input altitude 0
+/CRY/input subboxLength 50
+/CRY/input nParticlesMin 1
+/CRY/input nParticlesMax 2
+/CRY/update
 
 ## change the name of the output root file, default = wcsim.root
 /WCSimIO/RootFile wcsim_output.root

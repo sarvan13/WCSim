@@ -28,7 +28,9 @@ include(${ROOT_USE_FILE})
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${PROJECT_SOURCE_DIR}/../shared/include 
                     ${Geant4_INCLUDE_DIR}
-                    ${ROOT_INCLUDE_DIR})
+                    ${ROOT_INCLUDE_DIR}
+                    ../cry_v1.7/src)
+link_directories(/data/prouse/hk/cry_v1.7/lib)
 
 #----------------------------------------------------------------------------
 # Add libraries: need to compile the Dict before linking WCSim !!
@@ -88,7 +90,7 @@ endif()
 
 
 add_executable(WCSim WCSim.cc ${sources} ${headers})
-target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} WCSimRoot Tree)  #add profiler to use gperftools
+target_link_libraries(WCSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} WCSimRoot Tree CRY)  #add profiler to use gperftools
 
 
 

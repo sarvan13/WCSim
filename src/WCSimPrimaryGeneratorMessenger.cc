@@ -4,6 +4,7 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithoutParameter.hh"
 #include "G4ios.hh"
 
 WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGeneratorAction* pointerToAction)
@@ -15,10 +16,10 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   genCmd = new G4UIcmdWithAString("/mygen/generator",this);
   genCmd->SetGuidance("Select primary generator.");
 
-  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, rootracker");
+  genCmd->SetGuidance(" Available generators : muline, gun, laser, gps, rootracker, CRY");
   genCmd->SetParameterName("generator",true);
   genCmd->SetDefaultValue("muline");
-  genCmd->SetCandidates("muline gun laser gps rootracker");
+  genCmd->SetCandidates("muline gun laser gps rootracker CRY");
 
   fileNameCmd = new G4UIcmdWithAString("/mygen/vecfile",this);
   fileNameCmd->SetGuidance("Select the file of vectors.");
@@ -39,12 +40,36 @@ WCSimPrimaryGeneratorMessenger::WCSimPrimaryGeneratorMessenger(WCSimPrimaryGener
   poisMeanCmd->SetParameterName("poissonMean", true);
   poisMeanCmd->SetDefaultValue(1);
 
+
+  CRYDir = new G4UIdirectory("/CRY/");
+  CRYDir->SetGuidance("CRY initialization");
+  FileCmd = new G4UIcmdWithAString("/CRY/file",this);
+  FileCmd->SetGuidance("This reads the CRY definition from a file");
+  FileCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  InputCmd = new G4UIcmdWithAString("/CRY/input",this);
+  InputCmd->SetGuidance("CRY input lines");
+  InputCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  UpdateCmd = new G4UIcmdWithoutParameter("/CRY/update",this);
+  UpdateCmd->SetGuidance("Update CRY definition.");
+  UpdateCmd->SetGuidance("This command MUST be applied before \"beamOn\" ");
+  UpdateCmd->SetGuidance("if you changed the CRY definition.");
+  UpdateCmd->AvailableForStates(G4State_Idle);
+
+  MessInput = new std::string;
+
+
 }
 
 WCSimPrimaryGeneratorMessenger::~WCSimPrimaryGeneratorMessenger()
 {
   delete genCmd;
   delete mydetDirectory;
+  delete CRYDir;
+  delete InputCmd;
+  delete UpdateCmd;
+  delete FileCmd;
 }
 
 void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
@@ -59,6 +84,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetRootrackerEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
+      myAction->SetCRYEvtGenerator(false);
     }
     else if ( newValue == "gun")
     {
@@ -67,6 +93,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetRootrackerEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
+      myAction->SetCRYEvtGenerator(false);
     }
     else if ( newValue == "laser")   //T. Akiri: Addition of laser
     {
@@ -75,6 +102,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetRootrackerEvtGenerator(false);
       myAction->SetLaserEvtGenerator(true);
       myAction->SetGPSEvtGenerator(false);
+      myAction->SetCRYEvtGenerator(false);
     }
     else if ( newValue == "gps")
     {
@@ -83,6 +111,7 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetRootrackerEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetGPSEvtGenerator(true);
+      myAction->SetCRYEvtGenerator(false);
     }
     else if ( newValue == "rootracker")   //M. Scott: Addition of Rootracker events
     {
@@ -91,6 +120,16 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
       myAction->SetGunEvtGenerator(false);
       myAction->SetLaserEvtGenerator(false);
       myAction->SetGPSEvtGenerator(false);
+      myAction->SetCRYEvtGenerator(false);
+    }
+    else if ( newValue == "CRY")
+    {
+      myAction->SetMulineEvtGenerator(false);
+        myAction->SetRootrackerEvtGenerator(false);
+        myAction->SetGunEvtGenerator(false);
+        myAction->SetLaserEvtGenerator(false);
+        myAction->SetGPSEvtGenerator(false);
+      myAction->SetCRYEvtGenerator(true);
     }
   }
 
@@ -110,6 +149,23 @@ void WCSimPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String 
         G4cout << "Please put the '/mygen/generator' command above the '/mygen/vecfile' command in the mac file." << G4endl;
     }
   }
+
+  if( command == InputCmd )
+   {
+     myAction->InputCRY();
+     (*MessInput).append(newValue);
+     (*MessInput).append(" ");
+   }
+
+  if( command == UpdateCmd )
+   {
+     myAction->UpdateCRY(MessInput);
+     *MessInput = "";
+   }
+
+  if( command == FileCmd )
+   { myAction->CRYFromFile(newValue); }
+
 
   if( command == poisCmd )
     {
@@ -143,6 +199,8 @@ G4String WCSimPrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
       { cv = "gps"; }
     else if(myAction->IsUsingRootrackerEvtGenerator())
       { cv = "rootracker"; }   //M. Scott: Addition of Rootracker events
+    else if(myAction->IsUsingCRYEvtGenerator())
+      { cv = "CRY"; }   
   }
   
   return cv;

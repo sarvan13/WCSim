@@ -35,8 +35,8 @@ ifdef GCCVERS296
 CPPFLAGS += -DUSE_STRSTREAM
 endif
 
-CPPFLAGS  += -I$(ROOTSYS)/include $(ROOTCFLAGS) -std=c++0x            ##for unordered_map 
-EXTRALIBS += $(ROOTLIBS)
+CPPFLAGS  += -I$(ROOTSYS)/include $(ROOTCFLAGS) -I$(CRYHOME)/src -std=c++0x            ##for unordered_map
+EXTRALIBS += $(ROOTLIBS) -L$(CRYHOME)/lib -lCRY
 
 EXTRA_LINK_DEPENDENCIES := 
 
