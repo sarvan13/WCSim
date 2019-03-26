@@ -262,6 +262,14 @@ WCSimDetectorMessenger::WCSimDetectorMessenger(WCSimDetectorConstruction* WCSimD
   mPMT_ID_reflector_z_offset->SetDefaultUnit("mm");
   mPMT_ID_reflector_z_offset->SetUnitCandidates("mm cm m");
 
+  mPMT_ID_reflector_x_offset = new G4UIcmdWithADoubleAndUnit("/WCSim/mPMT/reflectorXoffsetID",this);
+  mPMT_ID_reflector_x_offset->SetGuidance("Set x position offset of reflector cone for each ID PMT.");
+  mPMT_ID_reflector_x_offset->SetParameterName("reflectorXoffsetID", true);
+  mPMT_ID_reflector_x_offset->SetDefaultValue(1.1); 
+  mPMT_ID_reflector_x_offset->SetUnitCategory("Length");
+  mPMT_ID_reflector_x_offset->SetDefaultUnit("mm");
+  mPMT_ID_reflector_x_offset->SetUnitCandidates("mm cm m");
+
 
   mPMT_ID_reflector_angle = new G4UIcmdWithADoubleAndUnit("/WCSim/mPMT/reflectorAngleID",this);
   mPMT_ID_reflector_angle->SetGuidance("Set angle of reflector cone wrt PMT axis for each ID PMT.");
@@ -573,6 +581,10 @@ void WCSimDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 	if (command == mPMT_ID_reflector_z_offset){
 	  G4cout << "Set Z position offset of reflector cone to " << newValue  << " " << G4endl;	
 	  WCSimDetector->SetmPMT_ReflectorZoffset(mPMT_ID_reflector_z_offset->GetNewDoubleValue(newValue));
+	}
+        if (command == mPMT_ID_reflector_x_offset){
+	  G4cout << "Set X position offset of reflector cone to " << newValue  << " " << G4endl;	
+	  WCSimDetector->SetmPMT_ReflectorXoffset(mPMT_ID_reflector_x_offset->GetNewDoubleValue(newValue));
 	}
 	if (command == mPMT_ID_reflector_angle){
 	  G4cout << "Set Angle of reflector cone to " << newValue  << " " << G4endl;	

@@ -216,6 +216,7 @@ public:
   void SetmPMT_Orientation(mPMT_orientation orient){orientation = orient;}
   void SetmPMT_ReflectorHeight(G4double ref_height){id_reflector_height = ref_height;}
   void SetmPMT_ReflectorZoffset(G4double ref_zoffset){id_reflector_z_offset = ref_zoffset;}
+  void SetmPMT_ReflectorXoffset(G4double ref_xoffset){id_reflector_x_offset = ref_xoffset;}
   void SetmPMT_ReflectorAngle(G4double ref_angle){id_reflector_angle = ref_angle;}
   void SetmPMT_MaterialOuter(G4String outer_material){
     mPMT_outer_material = outer_material;
@@ -631,6 +632,7 @@ private:
   G4double mPMT_outer_material_d;
   G4double id_reflector_height;
   G4double id_reflector_z_offset;
+  G4double id_reflector_x_offset;
   G4double id_reflector_angle;
   G4int nID_PMTs;
   G4String wcsimdir_path;

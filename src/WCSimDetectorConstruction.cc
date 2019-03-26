@@ -77,6 +77,7 @@ WCSimDetectorConstruction::WCSimDetectorConstruction(G4int DetConfig,WCSimTuning
   // Radius of cone at z=reflectorHeight
   id_reflector_height = 0.*CLHEP::mm;
   id_reflector_z_offset = 0.*CLHEP::mm;
+  id_reflector_x_offset = 0.*CLHEP::mm;
   id_reflector_angle = 0.*CLHEP::deg; 
   // parameters related to filling the ID mPMT
   nID_PMTs = 1;   //per mPMT

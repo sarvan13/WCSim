@@ -420,6 +420,7 @@ void WCSimDetectorConstruction::SetNuPrism_mPMTGeometry()
 	// Radius of cone at z=reflectorHeight
 	id_reflector_height = 6.53*CLHEP::mm;        // for a radius of 7.25mm, for hex: 5.4mm (radius of 6mm)
 	id_reflector_z_offset = 4.8*CLHEP::mm;       //from KM3Net CAD drawings
+        id_reflector_x_offset = 1.1*CLHEP::mm;
 	id_reflector_angle = 48.*CLHEP::deg;         // Need to be remeasured for different PMT curvature 
 	mPMT_pmt_openingAngle = 8.7*CLHEP::deg;     // for hex: 8.5deg
 	G4double vessel_tot_height = vessel_radius + vessel_cyl_height;
@@ -474,10 +475,11 @@ void WCSimDetectorConstruction::SetNuPrismShort_mPMTGeometry()
 	// Radius of cone at z=reflectorHeight
 	id_reflector_height = 6.53*CLHEP::mm;        // for a radius of 7.25mm, for hex: 5.4mm (radius of 6mm)
 	id_reflector_z_offset = 4.8*CLHEP::mm;       //from KM3Net CAD drawings
+        id_reflector_x_offset = 1.1*CLHEP::mm;  
 	id_reflector_angle = 48.*CLHEP::deg;         // Need to be remeasured for different PMT curvature 
 	mPMT_pmt_openingAngle = 8.7*CLHEP::deg;     // for hex: 8.5deg
 	G4double vessel_tot_height = vessel_radius + vessel_cyl_height;
-	
+	    
 	// parameters related to filling the ID mPMT
 	nID_PMTs = 19;
 	config_file = wcsimdir_path+"/mPMT-configfiles/mPMTconfig_19_nuPrism_3ring.txt"; // for smaller reflector, use: mPMTconfig_19_nuPrism.txt (hex)
@@ -527,6 +529,7 @@ void WCSimDetectorConstruction::SetTestSinglemPMTGeometry()
   // Radius of cone at z=reflectorHeight
   id_reflector_height = 10*CLHEP::mm;                //10. > previous 7mm (deprecated number from JINST)
   id_reflector_z_offset = 4.8*CLHEP::mm;            //from KM3Net CAD drawings
+  id_reflector_x_offset = 1.1*CLHEP::mm;
   id_reflector_angle = 48*CLHEP::pi/180.*CLHEP::rad; // Based on KM3Net reflector specs
   mPMT_pmt_openingAngle = 8.7*CLHEP::deg;     
   
@@ -576,6 +579,7 @@ void WCSimDetectorConstruction::Cylinder_60x74_3inchmPMT_14perCent()
   // Radius of cone at z=reflectorHeight
   id_reflector_height = 7.5*CLHEP::mm;         //7.5mm from KM3Net JINST
   id_reflector_z_offset = 1.1*CLHEP::mm;         //from KM3Net CAD drawings
+  id_reflector_x_offset = 1.1*CLHEP::mm;
   id_reflector_angle = CLHEP::pi/4*CLHEP::rad; // Based on KM3Net JINST: 45 deg wrt normal, so 7.5mm xtra
   G4double vessel_tot_height = vessel_radius + vessel_cyl_height;
 
@@ -629,6 +633,7 @@ void WCSimDetectorConstruction::Cylinder_60x74_3inchmPMT_40perCent()
   // Radius of cone at z=reflectorHeight
   id_reflector_height = 7.5*CLHEP::mm;         //7.5mm from KM3Net JINST
   id_reflector_z_offset = 1.1*CLHEP::mm;         //from KM3Net CAD drawings
+  id_reflector_x_offset = 1.1*CLHEP::mm;
   id_reflector_angle = CLHEP::pi/4*CLHEP::rad; // Based on KM3Net JINST: 45 deg wrt normal, so 7.5mm xtra
   G4double vessel_tot_height = vessel_radius + vessel_cyl_height;
 
@@ -721,6 +726,7 @@ void WCSimDetectorConstruction::InitSinglePMT(){
   mPMT_outer_material_d = 0.*CLHEP::mm;
   id_reflector_height = 0.*CLHEP::mm;
   id_reflector_z_offset = 0.*CLHEP::mm;
+  id_reflector_x_offset = 0.*CLHEP::mm;
   id_reflector_angle = 0.*CLHEP::rad; 
   nID_PMTs = 1;   
   config_file = "";

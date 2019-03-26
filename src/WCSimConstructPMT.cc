@@ -335,16 +335,17 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructPMT(G4String PMTName, G4Str
      && (reflectorRadius-radius) > -5*CLHEP::mm){
 
     /* Some details:
-     *               1.1mm is the gap between reflector and PMT for mechanical construction 
+     *               id_reflector_x_offset (1.1mm) is the gap between reflector
+     *               and PMT for mechanical construction 
      *               (KM3NeT support matrix value)
      * three degrees of freedom: height, z position and opening angle
      */
     G4Cons* reflectorCone =
       new G4Cons("WCPMT_reflect",
-		 radius + 1.1*CLHEP::mm,                               //rmin
-		 radius + 1.1*CLHEP::mm + reflectorThickness,          //rmax
-		 reflectorRadius + 1.1*CLHEP::mm,                      //Rmin
-		 reflectorRadius + 1.1*CLHEP::mm + reflectorThickness, //Rmax
+		 radius + id_reflector_x_offset,                               //rmin
+		 radius + id_reflector_x_offset + reflectorThickness,          //rmax
+		 reflectorRadius + id_reflector_x_offset,                      //Rmin
+		 reflectorRadius + id_reflector_x_offset + reflectorThickness, //Rmax
 		 id_reflector_height/2,                                //z/2
 		 0, 2*CLHEP::pi);
 
@@ -427,9 +428,9 @@ G4LogicalVolume* WCSimDetectorConstruction::ConstructPMT(G4String PMTName, G4Str
 						    -expose - dist_pmt_vessel+id_reflector_z_offset
 						    +id_reflector_height)};
       
-      G4double ReflectorHolderr[3] = {radius + 1.1*CLHEP::mm + reflectorThickness,
-				      radius + 1.1*CLHEP::mm + reflectorThickness,
-				      reflectorRadius + 1.1*CLHEP::mm + reflectorThickness};
+      G4double ReflectorHolderr[3] = {radius + id_reflector_x_offset + reflectorThickness,
+				      radius + id_reflector_x_offset + reflectorThickness,
+				      reflectorRadius + id_reflector_x_offset + reflectorThickness};
       
       G4Polycone * solidWCPMTsupport2 =
 	new G4Polycone("WCPMTsupport2",

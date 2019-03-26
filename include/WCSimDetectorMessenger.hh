@@ -58,6 +58,7 @@ class WCSimDetectorMessenger: public G4UImessenger
   G4UIcmdWithADoubleAndUnit* mPMT_material_outer_thickness; 
   G4UIcmdWithADoubleAndUnit* mPMT_ID_reflector_height;
   G4UIcmdWithADoubleAndUnit* mPMT_ID_reflector_z_offset;
+  G4UIcmdWithADoubleAndUnit* mPMT_ID_reflector_x_offset;
   G4UIcmdWithADoubleAndUnit* mPMT_ID_reflector_angle;
   G4UIcmdWithAnInteger*      mPMT_nID_PMTs;
   G4UIcmdWithAString*        mPMT_config;
