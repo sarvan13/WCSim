@@ -1,0 +1,32 @@
+# TestSinglemPMT with circular photon source, theta-phi distribution
+# For use with x_run_theta_phi.sh
+
+/run/verbose 0
+/tracking/verbose 0
+/hits/verbose 0
+/control/execute mPMT_NP2_refl.mac
+/WCSim/PMTQEMethod DoNotApplyQE
+/WCSim/PMTCollEff off
+/WCSim/SavePi0 false
+/DAQ/Digitizer SKI
+/DAQ/Trigger NDigits
+/control/execute macros/daq.mac
+/DarkRate/SetDarkRate 0 kHz
+/DarkRate/SetDarkMode 1
+/DarkRate/SetDarkHigh 100000
+/DarkRate/SetDarkLow 0
+/DarkRate/SetDarkWindow 4000
+/mygen/generator laser
+/gps/particle opticalphoton
+/gps/ene/mono 3.102 eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/radius 0.25 m
+/gps/pos/centre -4.66317591116653482498 -.92541657839832335285 .17364817766693034876 m
+/gps/pos/rot1 .05939117461388470637 -.16317591116653482544 -.98480775301220805938
+/gps/pos/rot2 2.74747741945462227323 1 0
+/gps/direction -.33682408883346517502 .92541657839832335285 -.17364817766693034876
+/WCSimIO/RootFile x_mPMT_NP2_refl_-70_10.root
+
+/run/beamOn 100
+#exit
