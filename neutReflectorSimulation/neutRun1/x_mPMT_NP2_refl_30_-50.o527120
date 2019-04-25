@@ -1,4 +1,0 @@
-/home/sgill/.bashrc: line 3: /neut/data21/gill/root/install/bin/thisroot.sh: Permission denied
-/home/sgill/.bashrc: line 7: /neut/data21/gill/geant4.10.01.p03-install/share/Geant4-10.1.3/geant4make/geant4make.sh: Permission denied
-/var/lib/torque/mom_priv/jobs/527120.neut17.triumf.ca.SC: line 8: cd: /neut/data21/gill/sarvanWCSim/WCSim/ReflectorSimulation: Permission denied
-/var/lib/torque/mom_priv/jobs/527120.neut17.triumf.ca.SC: line 9: logs/x_mPMT_NP2_refl_30_-50.log: No such file or directory

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#PBS -N x_mPMT_NP2_refl_-80_-20
-#PBS -j oe
-#PBS -l walltime=12:00:00,mem=2000mb,vmem=2000mb
-
-source ~/.bashrc
-cd /neut/data21/gill/sarvanWCSim/WCSim/ReflectorSimulation
-/neut/data21/gill/sarvanWCSim/WCSim/geant4_workdir/bin/Linux-g++/WCSim x_mPMT_NP2_refl_-80_-20.mac &> logs/x_mPMT_NP2_refl_-80_-20.log
