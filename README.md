@@ -1,4 +1,6 @@
-## Welcome to WCSim
+# Welcome to WCSim
+
+## Switch to \reflector branch for recent work done by Sarvan
 
 WCSim is a very flexible GEANT4 based program for developing and
 simulating large water Cherenkov detectors.
